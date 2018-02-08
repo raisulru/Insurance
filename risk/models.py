@@ -1,6 +1,7 @@
 from django.db import models
 from .enums import FIELD_TYPES
 
+
 # # Create your models here.
 class ChoicesField(models.Model):
     name = models.CharField(max_length=150)
