@@ -4,7 +4,7 @@ from .enums import FIELD_TYPES
 
 # # Create your models here.
 class ChoicesField(models.Model):
-    name = models.CharField(max_length=150)
+    name = models.CharField(max_length=150, blank=True, null=True)
 
     def __str__(self):
         return self.name
@@ -45,7 +45,6 @@ class FieldType(models.Model):
 
 class Risk(models.Model):
     name = models.CharField(max_length=100, unique=True)
-    slug = models.SlugField(max_length=100, unique=True)
     fields = models.ManyToManyField(FieldType)
 
     def __str__(self):

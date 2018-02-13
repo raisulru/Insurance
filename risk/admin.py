@@ -3,7 +3,6 @@ from .models import Risk, FieldType, Fields, ChoicesField
 
 
 class RiskAdmin(admin.ModelAdmin):
-    prepopulated_fields = {"slug": ("name",)}
     list_display = [
         'name',
         'fields'
