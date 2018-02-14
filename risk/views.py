@@ -7,8 +7,7 @@ from .models import Risk
 
 # Create your views here.
 class RiskList(generics.ListCreateAPIView):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                      IsOwnerOrReadOnly,)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly, )
     queryset = Risk.objects.all().order_by('id')
     serializer_class = RiskListSerializer
 
@@ -19,7 +18,6 @@ class RiskList(generics.ListCreateAPIView):
 
 
 class RiskDetails(generics.RetrieveUpdateDestroyAPIView):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,
-                      IsOwnerOrReadOnly,)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly, )
     queryset = Risk.objects.all()
     serializer_class = RiskListSerializer
