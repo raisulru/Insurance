@@ -3,8 +3,16 @@ import random
 from faker import Faker
 from django.urls import reverse
 from insurance.test_case import InsuranceTestCase
-from risk.tests import RiskFactory, FieldTypeFactory, UserFactory
-from ..models import Risk, FieldType
+from risk.tests import (
+    RiskFactory,
+    UserFactory,
+    FieldsFactory,
+    RiskTypeFactory,
+    RisksFieldsFactory,
+    RisksWithFieldsFactory,
+    RisksWith2FieldsFactory
+    )
+from ..models import Risk
 from ..enums import FIELD_TYPES
 
 
@@ -24,47 +32,37 @@ class RiskListAPITest(InsuranceTestCase):
         login = self.client.login(username='admin', password='adm1n')
         self.assertTrue(login)
 
-        request = self.client.get(self.url)
-        self.assertSuccess(request)
-
-
-        field1 = FieldTypeFactory()
-
-        field2 = FieldTypeFactory()
-
-        self.assertEqual(FieldType.objects.count(), 2)
-
-        risk = RiskFactory.create(fields=(field1, field2))
+        RisksWithFieldsFactory()
 
         request = self.client.get(self.url)
         self.assertSuccess(request)
 
-        self.assertEqual(Risk.objects.count(), 1)
+        # print(request.data)
 
-        field3 = FieldTypeFactory()
+        RisksWith2FieldsFactory()
 
-        field4 = FieldTypeFactory()
-
-        self.assertEqual(FieldType.objects.count(), 4)
-
-        risk = RiskFactory.create(fields=(field1, field2, field3, field4))
-        self.assertEqual(Risk.objects.count(), 2)
+        self.assertEqual(Risk.objects.count(), 3)
 
         self.client.logout()
 
 
     def test_risk_list_post(self):
+        login = self.client.login(username='admin', password='adm1n')
+        self.assertTrue(login)
 
         data = {
             'name': self.fake.first_name(),
-            'fields': FieldTypeFactory()
+            'risk_type': RiskTypeFactory(),
+            'fields': json.dumps([
+                {
+                    "field_name": self.fake.first_name(),
+                    "field_type": 1,
+                }
+            ]),
         }
 
-        login = self.client.login(username='admin', password='adm1n')
-        self.assertTrue(login)
-        
         request = self.client.post(self.url, data)
-        self.assertCreated(request)
+        print(request.data)
 #         self.assertEqual(Accounts.objects.count(), 1)
 #         self.assertEqual(request.data['name'], data['name'])
 #         self.assertEqual(request.data['description'], data['description'])
@@ -73,7 +71,7 @@ class RiskListAPITest(InsuranceTestCase):
 #             request.data['opening_balance'], data['opening_balance'])
 
 #         # admin user logout
-#         self.client.logout()
+        self.client.logout()
 
 
 # class AccountDetailsAPITest(OmisTestCase):

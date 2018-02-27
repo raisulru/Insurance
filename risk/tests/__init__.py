@@ -4,7 +4,8 @@ from django.utils import timezone
 from django.contrib.auth.models import User
 from ..models import (ChoicesField,
                       Fields,
-                      FieldType,
+                      RiskType,
+                      RisksFields,
                       Risk, )
 
 from ..enums import FIELD_TYPES
@@ -37,6 +38,8 @@ class FieldsFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Fields
 
+    field_type = random.randint(1, 12)
+    field_name = factory.Faker('first_name')
     char_field = factory.Faker('first_name')
     text_field = factory.Faker('text')
     email_field = factory.LazyAttribute(lambda fields: '{}@example.com'.format(fields.char_field))
@@ -49,29 +52,33 @@ class FieldsFactory(factory.django.DjangoModelFactory):
     choices_field = factory.SubFactory(ChoicesFieldFactory)
 
 
-class FieldTypeFactory(factory.django.DjangoModelFactory):
+class RiskTypeFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = FieldType
+        model = RiskType
 
-    field_type = random.randint(1, 12)
-    field_name = factory.Faker('first_name')
-    field_value = factory.SubFactory(FieldsFactory)
+    name = factory.Faker('first_name')
 
 
 class RiskFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Risk
-
+    
     name = factory.Faker('first_name')
+    risk_type = factory.SubFactory(RiskTypeFactory)
 
-    @factory.post_generation
-    def fields(self, create, extracted, **kwargs):
-        if not create:
-            # Simple build, do nothing.
-            return
 
-        if extracted:
-            # A list of fields were passed in, use them
-            for field in extracted:
-                self.fields.add(field)
+class RisksFieldsFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = RisksFields
 
+    risk = factory.SubFactory(RiskFactory)
+    fields = factory.SubFactory(FieldsFactory)
+
+
+class RisksWithFieldsFactory(FieldsFactory):
+    fields = factory.RelatedFactory(RisksFieldsFactory, 'fields')
+
+
+class RisksWith2FieldsFactory(FieldsFactory):
+    fields1 = factory.RelatedFactory(RisksFieldsFactory, 'fields', risk__name='Risk1')
+    fields2 = factory.RelatedFactory(RisksFieldsFactory, 'fields', risk__name='Risk2')

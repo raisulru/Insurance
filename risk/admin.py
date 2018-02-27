@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Risk, FieldType, Fields, ChoicesField
+from .models import Risk, RiskType, Fields, ChoicesField, RisksFields
 
 
 class RiskAdmin(admin.ModelAdmin):
@@ -9,6 +9,7 @@ class RiskAdmin(admin.ModelAdmin):
     ]
 # Register your models here.
 admin.site.register(Risk, RiskAdmin)
-admin.site.register(FieldType)
+admin.site.register(RiskType)
 admin.site.register(Fields)
 admin.site.register(ChoicesField)
+admin.site.register(RisksFields)
