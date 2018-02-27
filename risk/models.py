@@ -19,7 +19,7 @@ class Fields(models.Model):
     char_field = models.CharField(max_length=100, blank=True, null=True)
     text_field = models.TextField(blank=True, null=True)
     email_field = models.EmailField(max_length=250, blank=True, null=True)
-    boolean_field = models.BooleanField(blank=True)
+    boolean_field = models.BooleanField(default=False)
     date_time_field = models.DateTimeField(auto_now=False, auto_now_add=False, blank=True, null=True)
     file_field = models.FileField(upload_to=None, max_length=100, blank=True)
     image_field = models.ImageField(upload_to=None, max_length=100, blank=True)
@@ -48,7 +48,7 @@ class RiskType(models.Model):
 
 class Risk(models.Model):
     name = models.CharField(max_length=100)
-    risk_type = models.ForeignKey(RiskType, on_delete=models.CASCADE)
+    risk_type = models.ForeignKey(RiskType, on_delete=models.CASCADE, null=True, blank=True)
     fields = models.ManyToManyField(Fields, through='RisksFields')
 
     def __str__(self):

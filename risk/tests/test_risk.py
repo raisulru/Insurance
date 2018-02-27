@@ -12,7 +12,7 @@ from risk.tests import (
     RisksWithFieldsFactory,
     RisksWith2FieldsFactory
     )
-from ..models import Risk
+from ..models import Risk, Fields
 from ..enums import FIELD_TYPES
 
 
@@ -37,8 +37,6 @@ class RiskListAPITest(InsuranceTestCase):
         request = self.client.get(self.url)
         self.assertSuccess(request)
 
-        # print(request.data)
-
         RisksWith2FieldsFactory()
 
         self.assertEqual(Risk.objects.count(), 3)
@@ -52,16 +50,25 @@ class RiskListAPITest(InsuranceTestCase):
 
         data = {
             'name': self.fake.first_name(),
-            'risk_type': RiskTypeFactory(),
-            'fields': json.dumps([
+            'risk_type': RiskTypeFactory().pk,
+            'field_items': json.dumps([
                 {
                     "field_name": self.fake.first_name(),
                     "field_type": 1,
+                },
+                {
+                    "field_name": self.fake.first_name(),
+                    "field_type": 2,
                 }
             ]),
         }
 
         request = self.client.post(self.url, data)
+        self.assertCreated(request)
+
+        request = self.client.get(self.url)
+        self.assertSuccess(request)
+
         print(request.data)
 #         self.assertEqual(Accounts.objects.count(), 1)
 #         self.assertEqual(request.data['name'], data['name'])

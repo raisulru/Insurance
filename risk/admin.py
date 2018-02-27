@@ -5,7 +5,7 @@ from .models import Risk, RiskType, Fields, ChoicesField, RisksFields
 class RiskAdmin(admin.ModelAdmin):
     list_display = [
         'name',
-        'fields'
+        'risk_type',
     ]
 # Register your models here.
 admin.site.register(Risk, RiskAdmin)
