@@ -1,5 +1,6 @@
 import json
 import random
+import factory
 from faker import Faker
 from django.urls import reverse
 from insurance.test_case import InsuranceTestCase
@@ -55,10 +56,34 @@ class RiskListAPITest(InsuranceTestCase):
                 {
                     "field_name": self.fake.first_name(),
                     "field_type": 1,
+                    "char_field": self.fake.first_name(),
+                    "text_field": 'n/a',
+                    "email_field": None,
+                    "boolean_field": False,
+                    "date_time_field": None,
+                    "file_field": None,
+                    "image_field": None,
+                    "decimal_field": None,
+                    "float_field": None,
+                    "time_field": None,
+                    "url_field": "None",
+                    "choices_field": None
                 },
                 {
                     "field_name": self.fake.first_name(),
                     "field_type": 2,
+                    "char_field": None,
+                    "text_field": 'This is Text Fields',
+                    "email_field": None,
+                    "boolean_field": False,
+                    "date_time_field": None,
+                    "file_field": None,
+                    "image_field": None,
+                    "decimal_field": None,
+                    "float_field": None,
+                    "time_field": None,
+                    "url_field": "None",
+                    "choices_field": None
                 }
             ]),
         }
