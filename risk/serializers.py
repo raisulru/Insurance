@@ -1,7 +1,12 @@
+import logging
+from django.db import transaction
+from django.db.utils import IntegrityError
+from rest_framework import serializers
 from rest_framework.serializers import ModelSerializer
-from .models import Risk, FieldType, Fields, ChoicesField
+from .models import Risk, RiskType, Fields, ChoicesField, RisksFields
 from django.db import transaction
 
+logger = logging.getLogger(__name__)
 
 
 class ChoicesFieldSerializer(ModelSerializer):
@@ -9,6 +14,7 @@ class ChoicesFieldSerializer(ModelSerializer):
     class Meta:
         model = ChoicesField
         fields = (
+            'id',
             'name',
         )
 
@@ -19,6 +25,8 @@ class FieldsSerializer(ModelSerializer):
     class Meta:
         model = Fields
         fields = (
+            'field_name',
+            'field_type',
             'char_field',
             'text_field',
             'email_field',
@@ -34,79 +42,75 @@ class FieldsSerializer(ModelSerializer):
         )
 
 
-class FieldTypeSerializer(ModelSerializer):
-    field_value = FieldsSerializer()
+class RiskTypeSerializer(ModelSerializer):
 
     class Meta:
-        model = FieldType
+        model = RiskType
         fields = (
-            'field_type',
-            'field_name',
-            'field_value'
+            'id',
+            'name',
         )
 
 
 class RiskListSerializer(ModelSerializer):
-    fields = FieldTypeSerializer(many=True)
+    fields = FieldsSerializer(many=True, read_only=True)
+    risk_type = RiskTypeSerializer()
 
     class Meta:
         model = Risk
         fields = (
             'id',
             'name',
+            'risk_type',
             'fields'
         )
 
 
 class RiskPostSerializer(ModelSerializer):
-    fields = FieldTypeSerializer(many=True)
+    field_items = serializers.JSONField(write_only=True, required=False, allow_null=True)
 
     class Meta:
         model = Risk
         fields = (
             'id',
             'name',
-            'fields'
+            'risk_type',
+            'field_items'
         )
 
-    # @transaction.atomic
+    def create_fields(self, risk, fields):
+        if fields:
+            for field in fields:
+
+                if field['choices_field']:
+                    choices = field.pop('choices_field', [])
+                    choice = ChoicesField.objects.create(name=choices['name'])
+                else:
+                    choice = None
+
+                item = Fields.objects.create(
+                    field_name=field['field_name'],
+                    field_type=field['field_type'],
+                    char_field=field['char_field'],
+                    text_field=field['text_field'],
+                    email_field=field['email_field'],
+                    boolean_field=field['boolean_field'],
+                    date_time_field=field['date_time_field'],
+                    file_field=field['file_field'],
+                    image_field=field['image_field'],
+                    decimal_field=field['decimal_field'],
+                    float_field=field['float_field'],
+                    time_field=field['time_field'],
+                    url_field=field['url_field'],
+                    choices_field=choice
+                    )
+                RisksFields.objects.create(risk=risk, fields=item)
+
     def create(self, validated_data):
-        fields_type = validated_data.pop('fields', [])
-        fields = fields_type.pop('field_value', [])
-        choices = fields.pop('choices_field', [])
+        fields = validated_data.pop('field_items', [])
+        risk = Risk.objects.create(**validated_data)
 
-        choice = ChoicesField(
-            name=choices['name']
-        )
-        choice.save()
+        self.create_fields(risk, fields)
 
-        field = Fields(
-            char_field=fields['char_field'],
-            text_field=fields['text_field'],
-            email_field=fields['email_field'],
-            boolean_field=fields['boolean_field'],
-            date_time_field=fields['date_time_field'],
-            file_field=fields['file_field'],
-            image_field=fields['image_field'],
-            decimal_field=fields['decimal_field'],
-            float_field=fields['float_field'],
-            time_field=fields['time_field'],
-            url_field=fields['url_field'],
-            choices_field=choice
-        )
-        field.save()
-
-        manyfield = FieldType(
-            field_type=fields_type['field_type'],
-            field_name=fields_type['field_name'],
-            field_value=field
-        )
-        manyfield.save()
-
-        risk = Risk(
-            **validated_data
-        )
-
-        risk.save()
-        risk.fields.add(manyfield)
         return risk
+
