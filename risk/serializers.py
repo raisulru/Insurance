@@ -14,6 +14,7 @@ class ChoicesFieldSerializer(ModelSerializer):
     class Meta:
         model = ChoicesField
         fields = (
+            'id',
             'name',
         )
 
@@ -46,6 +47,7 @@ class RiskTypeSerializer(ModelSerializer):
     class Meta:
         model = RiskType
         fields = (
+            'id',
             'name',
         )
 
@@ -79,7 +81,13 @@ class RiskPostSerializer(ModelSerializer):
     def create_fields(self, risk, fields):
         if fields:
             for field in fields:
-                # try:
+
+                if field['choices_field']:
+                    choices = field.pop('choices_field', [])
+                    choice = ChoicesField.objects.create(name=choices['name'])
+                else:
+                    choice = None
+
                 item = Fields.objects.create(
                     field_name=field['field_name'],
                     field_type=field['field_type'],
@@ -94,13 +102,9 @@ class RiskPostSerializer(ModelSerializer):
                     float_field=field['float_field'],
                     time_field=field['time_field'],
                     url_field=field['url_field'],
-                    choices_field=field['choices_field'],
+                    choices_field=choice
                     )
                 RisksFields.objects.create(risk=risk, fields=item)
-                # except IntegrityError as exception:
-                #     # exception caught
-                #     logger.info("{} Exception Caught".format(exception))
-                #     continue
 
     def create(self, validated_data):
         fields = validated_data.pop('field_items', [])

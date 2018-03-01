@@ -7,6 +7,7 @@ from insurance.test_case import InsuranceTestCase
 from risk.tests import (
     RiskFactory,
     UserFactory,
+    ChoicesFieldFactory,
     FieldsFactory,
     RiskTypeFactory,
     RisksFieldsFactory,
@@ -67,7 +68,9 @@ class RiskListAPITest(InsuranceTestCase):
                     "float_field": None,
                     "time_field": None,
                     "url_field": "None",
-                    "choices_field": None
+                    "choices_field": {
+                        "name": self.fake.first_name()
+                    }
                 },
                 {
                     "field_name": self.fake.first_name(),
@@ -94,7 +97,7 @@ class RiskListAPITest(InsuranceTestCase):
         request = self.client.get(self.url)
         self.assertSuccess(request)
 
-        print(request.data)
+        # print(request.data)
 #         self.assertEqual(Accounts.objects.count(), 1)
 #         self.assertEqual(request.data['name'], data['name'])
 #         self.assertEqual(request.data['description'], data['description'])
